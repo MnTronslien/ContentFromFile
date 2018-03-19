@@ -25,6 +25,7 @@ public class ZombieBehaviour : Behaviour
     ZombieStatManager.Stats _stats;
 
     //other global variables
+    private Vector3 _spawnPosition;
 
     //Setting up component references, Awake() is called before Start()
     override public void Awake()
@@ -32,6 +33,7 @@ public class ZombieBehaviour : Behaviour
         //We do not call base.Awake() in ZombieBehaviour 
         //because we do not want all the behaviour from the 
         //base class because zombie uses legacy Animation instead of an Animator
+        _spawnPosition = transform.position;
         _name = gameObject.name;
         _Speaker = GetComponent<AudioSource>();
         _Animation = GetComponentInChildren<Animation>();
@@ -68,6 +70,8 @@ public class ZombieBehaviour : Behaviour
         if (_state == State.Idle)
         {
             _Animation.Play("Zombie_Idle_01");
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
+            if (_Target.GetComponent<Behaviour>()._HitPointsCurrent > 0) { ChangeState(State.Moving); }
         }
         if (_state == State.Attacking)
         {
@@ -76,12 +80,16 @@ public class ZombieBehaviour : Behaviour
             {
                 ChangeState(State.Idle);
             }
-            
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
+
         }
         if (_state == State.Dead)
         {
-            _Animation.Play("Zombie_Death_01");
-
+            if (_isEnteringState) //using if _isEnteringState because i wnt this to only happen once per state change
+            {
+                _Animation.Play("Zombie_Death_01");
+                Invoke("HardReset", 0.5f);
+            }
         }
         if (_state == State.Moving)
         {
@@ -91,19 +99,26 @@ public class ZombieBehaviour : Behaviour
             {
                 ChangeState(State.Attacking);
             }
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
 
         }
     }
+    public void Die()
+    {
+
+    }
+
     private void Reset()
     {
         _NavMeshAgent.destination = transform.position;        
     }
     override public void HardReset()
     {
-        transform.position = new Vector3(-4, 0, 0);
+        transform.position = _spawnPosition;
         _HitPointsCurrent = ZombieStatManager._stats._Hitpoints;
         _HitpointsMaximum = ZombieStatManager._stats._Hitpoints;
-        ChangeState(ZombieBehaviour.State.Moving);
+        _Animation.Play("Zombie_Idle_01");
+        ChangeState(State.Idle);
     }
     override public void ChangeState(State newState)
     {

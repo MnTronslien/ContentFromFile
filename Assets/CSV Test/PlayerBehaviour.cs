@@ -31,16 +31,19 @@ public class PlayerBehaviour : Behaviour
         if (_Target == null)
         {
             _Target = GameObject.FindWithTag("Team 2");
-            if (_Target == null ) Debug.LogError("No zombie tagged with \"Team 2\" present in scene" );
+            if (_Target == null) Debug.LogError("No zombie tagged with \"Team 2\" present in scene");
         }
     }
 
     // Update is called as part of the base class "behaviour" and you will not find it here
 
-    public override void StateMachine() {
+    public override void StateMachine()
+    {
         //Idle state
         if (_state == State.Idle)
-        { //Do nothing
+        {
+            //TODO: LookforTarget so there is support for multiple zombies
+            if (_Target.GetComponent<Behaviour>()._HitPointsCurrent > 0) { ChangeState(State.Attacking); }
         }
         if (_state == State.Attacking)
         {
@@ -49,6 +52,11 @@ public class PlayerBehaviour : Behaviour
             {
                 ChangeState(State.Dead);
                 _Animator.SetBool("isDead", true);
+            }
+            if (_Target.GetComponent<Behaviour>()._HitPointsCurrent <= 0)
+            {
+                Debug.Log("enemyi sDEADED");
+                ChangeState(State.Idle);
             }
         }
         if (_state == State.Dead)
@@ -61,6 +69,7 @@ public class PlayerBehaviour : Behaviour
     {
         _Animator.SetBool("isAttacking", false);
         _Animator.SetBool("isDead", false);
+        SpecialAttackCleanUp();
     }
     override public void ChangeState(State newState)
     {
@@ -68,21 +77,23 @@ public class PlayerBehaviour : Behaviour
         _state = newState;
     }
 
-    public void SpecialAttack(int isLeft)
+    public void SpecialAttack(int isLeft) //gets called from animator event
     {
         _waveAttack.gameObject.SetActive(true);
         if (isLeft == 1)
         {
             Debug.Log("Fire left Lazooooors!");
-            _waveAttack.position = Vector3.Lerp(_emitterLeft.position, _Target.transform.position, 0.4f);
-            
+            //_waveAttack.position = Vector3.Lerp(_emitterLeft.position, _Target.transform.position, 0.4f);
+            _waveAttack.position = _emitterLeft.position;
         }
         else
         {
             Debug.Log("Fire right Lazooooors!");
-            _waveAttack.position = Vector3.Lerp(_emitterRight.position, _Target.transform.position, 0.4f);
+            //_waveAttack.position = Vector3.Lerp(_emitterRight.position, _Target.transform.position, 0.4f);
+            _waveAttack.position = _emitterRight.position;
         }
-            Invoke("SpecialAttackCleanUp", 0.5f);
+        DealDamage(_Target.GetComponent<Behaviour>(), 3f);
+        Invoke("SpecialAttackCleanUp", 0.5f);
     }
     public void SpecialAttackCleanUp()
     {
