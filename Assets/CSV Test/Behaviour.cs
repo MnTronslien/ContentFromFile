@@ -40,55 +40,65 @@ public class Behaviour : MonoBehaviour
     public float _HitpointsMaximum = 100;
     public float _HitPointsCurrent = 100;
     public GameObject _HealthBar;
-    private Vector3 _FullHealtBarSize;
+    [NonSerialized] public Vector3 _FullHealtBarSize;
+    [NonSerialized] public GameObject _Target;
+    [NonSerialized] public String _name;
 
     //Setting up component references, Awake() is called before Start()
-    private void Awake()
+    virtual public void Awake()
     {
+        _name = gameObject.name;
         _state = _defaultState;
         _Speaker = GetComponent<AudioSource>();
         _Animator = GetComponentInChildren<Animator>();
         _FullHealtBarSize = _HealthBar.transform.localScale;
+        
     }
 
     // Update is called once per frame
-    void Update()
+    virtual public void Update()
     {
-        gameObject.name = "Player " + _state; //For debugging
+        gameObject.name = _name + _state; //For debugging
+        UpdateHealthBarGraphic();        
+        if (GameStateManager._GameState == GameStateManager.GameState.Running)
+        {
+            DetectStateTransition();
+            StateMachine();
+            ResetStateTransition();
+        }
+    } //End Update
+
+    private void UpdateHealthBarGraphic()
+    {
         float newX = Mathf.Lerp(0, _FullHealtBarSize.x, _HitPointsCurrent / _HitpointsMaximum);
         _HealthBar.transform.localScale = new Vector3(newX, _FullHealtBarSize.y, _FullHealtBarSize.z);
-
-
-
+    }
+    private void DetectStateTransition()
+    {
         if (_state != _lastState) //detect state transition
         {
             _isEnteringState = true;
             _lastState = _state;
         }
-        StateMachine();
-
-    } //End Update
-
-    private void StateMachine()
+    }
+    virtual public void StateMachine()
     {
-        //State Machine -------------------------------------------------------------------------------------------
+        //Finite State Machine -------------------------------------------------------------------------------------------
         //If you do not know what a state machine is, the basic concept is 
         //that you organize the behaviour into certain states that decribe what the player (or enmy or whatever) may do.
         //The clue here is that each state is *inclusive* and not exlusive in the options of behaviour.
         //An example of this is that "jumping" is possible both while idle and moving. 
         //Instead of making specialized bahaviour for jumping and idle, we just allow both states to call the same method and transition into jumping state.
 
+
         //Idle state
         if (_state == State.Idle)
         {
-
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
         }
         if (_state == State.Attacking)
         {
-            if (_HitPointsCurrent <= 0)
-            {
-                ChangeState(State.Dead);
-            }
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
         }
         if (_state == State.Dead)
         {
@@ -96,33 +106,39 @@ public class Behaviour : MonoBehaviour
         }
         if (_state == State.Moving)
         {
-
+            if (_HitPointsCurrent <= 0) ChangeState(State.Dead);
         }
+        
+    }
+    private void ResetStateTransition()
+    {
         _isEnteringState = false; //reset entering state to false
     }
 
-    public void ChangeState(State newState)
+
+    public virtual void ChangeState(State newState)
     {
         _state = newState;
     }
 
     public State GetState() { return _state; }
 
-    public void HardReset()
+    public virtual void HardReset()
     {
         _HitPointsCurrent = _HitpointsMaximum;
-        ChangeState(State.Idle);
+        ChangeState(_defaultState);
     }
 
     public void TakeDamage(float damageValue)
     {
         _HitPointsCurrent -= damageValue;
-        Debug.Log("Player took " + damageValue + " points of damage!");
+        Debug.Log(gameObject.name + " took " + damageValue + " points of damage!");
 
     }
-    public void DealAttack(Behaviour target, float amount)
+    public void DealDamage(Behaviour target, float amount)
     {
         target.TakeDamage(amount);
+        Debug.Log(gameObject.name + " attacked " + target.name + " for " + amount + " damage!");
     }
 
 }

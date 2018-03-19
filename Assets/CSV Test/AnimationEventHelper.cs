@@ -13,7 +13,7 @@ public class AnimationEventHelper : MonoBehaviour {
 
     public void AttackHit()
     {
-        Debug.Log("animation event reporting!");
+        //Debug.Log("animation event reporting!");
         _ZB.DoDamage();
     }
 
