@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -43,11 +44,14 @@ public class Behaviour : MonoBehaviour
     [NonSerialized] public Vector3 _FullHealtBarSize;
     [NonSerialized] public GameObject _Target;
     [NonSerialized] public String _name;
+    public TextMeshProUGUI _NameDisplay;
+  
+
 
     //Setting up component references, Awake() is called before Start()
     virtual public void Awake()
     {
-        _name = gameObject.name;
+        _name = RandomNames.GetName();
         _state = _defaultState;
         _Speaker = GetComponent<AudioSource>();
         _Animator = GetComponentInChildren<Animator>();
@@ -125,6 +129,7 @@ public class Behaviour : MonoBehaviour
 
     public virtual void HardReset()
     {
+        _NameDisplay.text = RandomNames.GetName();
         _HitPointsCurrent = _HitpointsMaximum;
         ChangeState(_defaultState);
     }

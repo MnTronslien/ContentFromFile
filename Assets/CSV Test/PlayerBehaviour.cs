@@ -28,6 +28,7 @@ public class PlayerBehaviour : Behaviour
     public override void Awake()
     {
         base.Awake(); //we still want the stuff in the superclass's awake method(Behaviour) to happen
+        _NameDisplay.text = RandomNames.GetName();
         if (_Target == null)
         {
             _Target = GameObject.FindWithTag("Team 2");

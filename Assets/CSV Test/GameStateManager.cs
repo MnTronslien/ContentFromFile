@@ -33,13 +33,13 @@ public class GameStateManager : MonoBehaviour {
     void Update () {
         if (Input.GetButtonDown("Jump"))
         {
-            ZombieStatManager.UpdateStats();
+            ZombieStatManager._ZombieStatManager.UpdateStats();
             Reset();
             _GameState = GameState.Idle;
             Invoke("RunGame",1);
         }
         if (_GameState == GameState.Running) UpdateClock();
-        if (_Player.GetState() == Behaviour.State.Dead)
+        if (_Player.GetState() == Behaviour.State.Dead && _GameState != GameState.Idle)
         {
             _Zombie.HardReset();
             _GameState = GameState.Idle;

@@ -5,7 +5,10 @@ using System.IO;
 using System;
 
 
-//this is a helper class for parsing csv files
+/// <summary>
+/// This is a helper class for parsing csv files.
+/// It is a staic class, meaning that i don't need a reference to an object of this type to acces its methods from other parts of my code
+/// </summary>
 public static class CSVParser : object
 {
     public static float[] LoadFromFileWithHeader(string Filename)

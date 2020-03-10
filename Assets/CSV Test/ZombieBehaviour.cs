@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 //Author Mattias Tronslien, 2018
@@ -51,15 +47,15 @@ public class ZombieBehaviour : Behaviour
     }
     private void Start()
     {
-        _stats = ZombieStatManager._stats;
+        _stats = ZombieStatManager._Stats;
+        HardReset();
     }
 
     // Update is called once per frame
     public override void Update()
     {
-        _Animation["Zombie_Walk_01"].speed = _stats._Walkspeed;
-        _NavMeshAgent.speed = _stats._Walkspeed/2;
-        _Animation["Zombie_Attack_01"].speed = _stats._Attackspeed; //TODO: calculate so that 50 frames becomes 1 second?
+        //_NavMeshAgent.speed = _stats._WalkSpeed/2;
+        Debug.Log(_stats._WalkSpeed / 2);
         base.Update();
 
     } //End Update
@@ -110,14 +106,21 @@ public class ZombieBehaviour : Behaviour
 
     private void Reset()
     {
-        _NavMeshAgent.destination = transform.position;        
+        _NavMeshAgent.destination = transform.position;
     }
     override public void HardReset()
     {
+        _stats = ZombieStatManager._Stats;
         transform.position = _spawnPosition;
-        _HitPointsCurrent = ZombieStatManager._stats._Hitpoints;
-        _HitpointsMaximum = ZombieStatManager._stats._Hitpoints;
+        _HitPointsCurrent = ZombieStatManager._Stats._Hitpoints;
+        _HitpointsMaximum = ZombieStatManager._Stats._Hitpoints;
+        
+        _name = RandomNames.GetName();
+        _NameDisplay.text = _name;
         _Animation.Play("Zombie_Idle_01");
+        _Animation["Zombie_Walk_01"].speed = _stats._WalkSpeed;
+        _NavMeshAgent.speed = _stats._WalkSpeed / 2;
+        _Animation["Zombie_Attack_01"].speed = _stats._AttackSpeed; //TODO: calculate so that 50 frames becomes 1 second?
         ChangeState(State.Idle);
     }
     override public void ChangeState(State newState)
@@ -128,7 +131,7 @@ public class ZombieBehaviour : Behaviour
     public void DoDamage() //helper method because the zombie animation event is legacy and cannot pass arguments to methods.
     {
         DealDamage(_Target.GetComponent<PlayerBehaviour>(), _stats._AttackDamage);
-        
+
     }
 
 }
